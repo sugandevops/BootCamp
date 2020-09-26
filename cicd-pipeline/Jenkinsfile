@@ -1,0 +1,30 @@
+node{
+    
+    stage('git checkout'){
+        git url: 'https://github.com/sugandevops/BootCamp.git'
+    }
+    
+    stage('build & test'){
+        def mavenHome = tool name: 'maven-3', type: 'maven'
+        def mavenCMD = "${mavenHome}/bin/mvn"
+        sh "${mavenCMD} clean package"
+        
+    }
+      stage('build the docker'){
+	sh 'docker build -t sugandevops/suganspringapp:1.0  .'
+     }
+
+    stage('push docker image to docker hub'){
+    withCredentials([string(credentialsId: 'sugandevops' , variable : 'dockerHubPwd')]){
+ 
+    sh 'docker login -u sugandevops -p ${dockerHubPwd}'
+    
+}
+  sh 'docker push sugandevops/suganspringapp:1.0'    
+
+}
+    stage('run the docker image'){
+     sh 'docker run -p 8090:8080 sugandevops/suganspringapp:1.0'
+}
+    
+}
